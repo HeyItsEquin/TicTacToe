@@ -33,7 +33,7 @@ internal class Commands
     public static CommandResult MoveCommand(CommandContext c)
     {
         if (c.Arguments.Count == 0)
-            return new CommandResult(ResultType.Error,"Usage: 'move <index>' | 'move <row> <col>'");            
+            return new CommandResult(ResultType.Error,"Usage: 'move <index>' | 'move <x> <y>'");
         
         if (c.Arguments.Count == 1)
         {
@@ -51,21 +51,21 @@ internal class Commands
         if (c.Arguments.Count == 2)
         {
             if (!int.TryParse(c.Arguments[0], out var row))
-                return new CommandResult(ResultType.Error,$"Argument <row> is not a valid row: '{c.Arguments[0]}'");
+                return new CommandResult(ResultType.Error,$"Argument <x> is not a valid column: '{c.Arguments[0]}'");
             
             if (!int.TryParse(c.Arguments[1], out var col))
-                return new CommandResult(ResultType.Error,$"Argument <col> is not a valid column: '{c.Arguments[1]}'");
+                return new CommandResult(ResultType.Error,$"Argument <y> is not a valid row: '{c.Arguments[1]}'");
             
             string outOfRangeMsg = "";
-            if (row < 1 || row > 3) outOfRangeMsg += $"Argument <row> out of range (1-3): {row}\n";
-            if (col < 1 || col > 3) outOfRangeMsg += $"Argument <col> out of range (1-3): {col}";
+            if (row < 1 || row > 3) outOfRangeMsg += $"Argument <x> out of range (1-3): {col}\n";
+            if (col < 1 || col > 3) outOfRangeMsg += $"Argument <y> out of range (1-3): {row}";
 
             if (outOfRangeMsg != string.Empty)
                 return new CommandResult(ResultType.Error,outOfRangeMsg.Trim());
             
-            var idx = Board.ToIndex(3,--row,--col);
+            var idx = Board.ToIndex(3,--col,--row);
             if (!c.Game.MakeMove(idx))
-                return new CommandResult(ResultType.Error,$"Illegal Move: {row},{col}");
+                return new CommandResult(ResultType.Error,$"Illegal Move: {col+1},{row+1}");
         }
 
         return new CommandResult(ResultType.Ok,"");
@@ -75,7 +75,7 @@ internal class Commands
     {
         string message = 
             "Commands:\n" +
-            "    'move <index>' | 'move <row> <col>' - Attempt to play at the specified board position\n" +
+            "    'move <index>' | 'move <x> <y>' - Attempt to play at the specified board position\n" +
             "    'help'                              - Show this message\n" +
             "    'quit' | 'exit'                     - Exit the game";
         
