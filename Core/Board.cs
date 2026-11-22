@@ -24,6 +24,33 @@ public class Board
         CurrentPlayer = Player.X;
     }
     
+    public override string ToString()
+    {
+        string s = "";
+        for (int i = 0; i < 3; i++)
+        {
+            int j;
+            for (j = 0; j < 3; j++)
+            {
+                s += $" {GetPlayerString(boardState[ToIndex(3,i,j)])} ";
+                if (j != 2)
+                    s += "|";
+            }
+            s += "\n";
+        }
+        return s;
+    }
+
+    public static string GetPlayerString(Player p)
+    {
+        return p switch
+        {
+            Player.X => "X",
+            Player.O => "O",
+            _ => "_"
+        };
+    }
+
     private void SwitchPlayer()
         => CurrentPlayer = CurrentPlayer == Player.X ? Player.O : Player.X;
 

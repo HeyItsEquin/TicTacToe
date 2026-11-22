@@ -1,2 +1,5 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿using TicTacToe.Cli;
+
+Terminal t = new();
+
+t.Start();
