@@ -33,10 +33,9 @@ public class Board
             for (j = 0; j < 3; j++)
             {
                 s += $" {GetPlayerString(boardState[ToIndex(3,i,j)])} ";
-                if (j != 2)
-                    s += "|";
+                if (j != 2) s += "|";
             }
-            s += "\n";
+            if (i != 2) s += "\n";
         }
         return s;
     }
@@ -47,7 +46,7 @@ public class Board
         {
             Player.X => "X",
             Player.O => "O",
-            _ => "_"
+            _ => "-"
         };
     }
 
@@ -56,8 +55,7 @@ public class Board
 
     public bool MakeMove(int move)
     {
-        var legal = GetLegalMoves();
-        if (legal.Contains(move))
+        if (IsLegalMove(move))
         {
             boardState[move] = CurrentPlayer;
             if (WinningMove(move)) hasWon = CurrentPlayer;
@@ -77,6 +75,8 @@ public class Board
             SwitchPlayer();
         }
     }
+    
+    public bool IsLegalMove(int move) => GetLegalMoves().Contains(move);
 
     public int[] GetLegalMoves()
     {
@@ -106,7 +106,7 @@ public class Board
         return false;
     }
     
-    private static int ToIndex(int rowLen, int row, int col)
+    public static int ToIndex(int rowLen, int row, int col)
     {
         return (row*rowLen)+col;
     }

@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using TicTacToe.Core;
 
 namespace TicTacToe.Cli;
@@ -9,6 +8,8 @@ public class Terminal
     
     private bool running = false;
 
+    private string? prevCommandResult;    
+
     public void Start()
     {
         running = true;
@@ -16,45 +17,69 @@ public class Terminal
         {
             Clear();
             PrintGame();
+            ShowCommandOutput();
             ShowPrompt();
-            var ki = Console.ReadKey();
-            int move = int.Parse(ki.KeyChar.ToString());
-            game.MakeMove(move-1);
+            var line = Console.ReadLine() ?? "";
+            RunCommand(line);
             
             var winner = game.GetWinner();
             if (winner != Player.None)
             {
-                Clear();
-                switch(winner)
+                Stop();
+                Console.WriteLine(winner switch
                 {
-                    case Player.X:
-                        Console.WriteLine("X has won!");
-                    break;
-                    case Player.O:
-                        Console.WriteLine("O has won!");
-                    break;
-                    default:
-                        Console.WriteLine("It's a draw!");
-                    break;
-                }
-                running = false;
+                   Player.X => "X has won!",
+                   Player.O => "O has won!",
+                   _ => "It's a draw!" 
+                });
             }
         }
     }
 
-    private void Clear()
+    private void RunCommand(string line)
     {
-        Console.Clear();
+        if (line == "")
+        {
+            prevCommandResult = null;
+            return;
+        }
+        var parts = line.Split(" ");
+        var verb = parts[0];
+        var result = CommandRegistry.TryGetCommand(verb,out var fn);
+        if (!result)
+        {
+            prevCommandResult = $"Command Not Found: {verb}";
+            return;
+        }
+        
+        var res = fn(new CommandContext(verb,parts[1..],game));
+        if (res.Result == ResultType.Exit)
+            Stop();
+            
+        prevCommandResult = res.Message == string.Empty ? null : res.Message;
+    }
+    
+    private void Stop()
+    {
+        Clear();
+        running = false;
+    }
+    private void Clear() => Console.Clear();
+
+    private void ShowCommandOutput()
+    {
+        if (prevCommandResult is null) return;
+
+        Console.WriteLine($"{prevCommandResult}\n");
     }
 
     private void PrintGame()
     {
-        Console.WriteLine(game);
-        Console.WriteLine();
+        Console.WriteLine($"{game}\n");
     }
     
     private void ShowPrompt()
     {
-        Console.Write($"({Board.GetPlayerString(game.CurrentPlayer)}) 1-9 > ");
+        Console.Write($"({Board.GetPlayerString(game.CurrentPlayer)}) > ");
     }
 }
