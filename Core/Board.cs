@@ -16,6 +16,8 @@ public class Board
     private Player hasWon;
 
     private Player[] boardState = new Player[9];
+
+    private readonly Stack<int> moveHistory = new();
     
     public Board()
     {
@@ -55,25 +57,20 @@ public class Board
 
     public bool MakeMove(int move)
     {
-        if (IsLegalMove(move))
-        {
-            boardState[move] = CurrentPlayer;
-            if (WinningMove(move)) hasWon = CurrentPlayer;
-            SwitchPlayer();
-            return true;
-        }
-        return false;
+        if (!IsLegalMove(move)) return false;
+        boardState[move] = CurrentPlayer;
+        if (WinningMove(move)) hasWon = CurrentPlayer;
+        moveHistory.Push(move);
+        SwitchPlayer(); 
+        return true;
     }
 
-    public void UndoMove(int move)
+    public void UndoMove()
     {
-        if (move >= 0 && move < boardState.Length)
-        {
-            if (boardState[move] == Player.None) return;
-            boardState[move] = Player.None;
-            hasWon = Player.None;
-            SwitchPlayer();
-        }
+        var lastMove = moveHistory.Pop();
+        boardState[lastMove] = Player.None;
+        hasWon = Player.None;
+        SwitchPlayer();
     }
     
     public bool IsLegalMove(int move) => GetLegalMoves().Contains(move);

@@ -1,38 +1,46 @@
 using TicTacToe.Core;
+using TicTacToe.Bot;
 
 namespace TicTacToe.Cli;
 
 public class Terminal
 {
     private readonly Board game = new();
-    
+    private Player human = Player.None;
+
     private bool running = false;
 
     private string? prevCommandResult;    
+
+    public void StartAgainstBot(bool startFirst)
+    {
+        if (startFirst)
+            human = Player.X;
+        else
+            human = Player.O;
+        running = true;
+        while (running)
+        {
+            if (game.CurrentPlayer == human)
+            {
+                PlayerInput();
+            }
+            else
+            {
+                var bot = new GameBot(game,game.CurrentPlayer);
+                game.MakeMove(bot.BestMove());
+            }
+            CheckWinner();
+        }
+    }
 
     public void Start()
     {
         running = true;
         while (running)
         {
-            Clear();
-            PrintGame();
-            ShowCommandOutput();
-            ShowPrompt();
-            var line = Console.ReadLine() ?? "";
-            RunCommand(line);
-            
-            var winner = game.GetWinner();
-            if (winner != Player.None)
-            {
-                Stop();
-                Console.WriteLine(winner switch
-                {
-                   Player.X => "X has won!",
-                   Player.O => "O has won!",
-                   _ => "It's a draw!" 
-                });
-            }
+            PlayerInput();
+            CheckWinner();
         }
     }
 
@@ -59,6 +67,33 @@ public class Terminal
         prevCommandResult = res.Message == string.Empty ? null : res.Message;
     }
     
+    private void PlayerInput()
+    {
+        Clear();
+        PrintGame();
+        ShowCommandOutput();
+        ShowPrompt();
+        var line = Console.ReadLine() ?? "";
+        RunCommand(line);
+    }
+    
+    private void CheckWinner()
+    {
+        var winner = game.GetWinner();
+        if (winner != Player.None)
+        {
+            Stop();
+            PrintGame();
+            Console.WriteLine(winner switch
+            {
+                Player.X => "X has won!",
+                Player.O => "O has won!",
+                _ => "It's a draw!"
+            });
+            Console.ReadKey(true);
+        }
+    }
+
     private void Stop()
     {
         Clear();

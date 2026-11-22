@@ -1,3 +1,4 @@
+using TicTacToe.Bot;
 using TicTacToe.Core;
 
 public enum ResultType
@@ -45,37 +46,47 @@ internal class Commands
 
             move--;
             if (!c.Game.MakeMove(move))
-                return new CommandResult(ResultType.Error,$"Illegal Move: {move}");
+                return new CommandResult(ResultType.Error,$"Illegal Move: {move+1}");
         }
-        
+
         if (c.Arguments.Count == 2)
         {
-            if (!int.TryParse(c.Arguments[0], out var row))
-                return new CommandResult(ResultType.Error,$"Argument <x> is not a valid column: '{c.Arguments[0]}'");
-            
-            if (!int.TryParse(c.Arguments[1], out var col))
-                return new CommandResult(ResultType.Error,$"Argument <y> is not a valid row: '{c.Arguments[1]}'");
+            if (!int.TryParse(c.Arguments[0], out var x))
+                return new CommandResult(ResultType.Error,$"Argument <x> is not a valid move: '{c.Arguments[0]}'");
+            if (!int.TryParse(c.Arguments[1], out var y))
+                return new CommandResult(ResultType.Error,$"Argument <y> is not a valid move: '{c.Arguments[1]}'");
             
             string outOfRangeMsg = "";
-            if (row < 1 || row > 3) outOfRangeMsg += $"Argument <x> out of range (1-3): {col}\n";
-            if (col < 1 || col > 3) outOfRangeMsg += $"Argument <y> out of range (1-3): {row}";
-
+            if (x < 1 || x > 3)
+                outOfRangeMsg += $"Argument <x> out of range (1-3): {x}\n";
+            if (y < 1 || y > 3)
+                outOfRangeMsg += $"Argument <y> out of range (1-3): {y}\n";
             if (outOfRangeMsg != string.Empty)
                 return new CommandResult(ResultType.Error,outOfRangeMsg.Trim());
             
-            var idx = Board.ToIndex(3,--col,--row);
+            var idx = Board.ToIndex(3,--y,--x);
             if (!c.Game.MakeMove(idx))
-                return new CommandResult(ResultType.Error,$"Illegal Move: {col+1},{row+1}");
-        }
+                return new CommandResult(ResultType.Error,$"Illegal Move: {x+1},{y+1}");
+        }        
 
         return new CommandResult(ResultType.Ok,"");
     }
     
+    public static CommandResult BestMove(CommandContext c)
+    {
+        var bot = new GameBot(c.Game,c.Game.CurrentPlayer);
+        var move = bot.BestMove();
+        if (move < 0)
+            return new CommandResult(ResultType.Error,"No legal moves remaining");
+        return new CommandResult(ResultType.Ok,$"Best Move: {move+1}");
+    }
+
     public static CommandResult HelpCommand(CommandContext c)
     {
         string message = 
             "Commands:\n" +
             "    'move <index>' | 'move <x> <y>' - Attempt to play at the specified board position\n" +
+            "    'best'                          - Returns the best move that can currently be played\n" +
             "    'help'                              - Show this message\n" +
             "    'quit' | 'exit'                     - Exit the game";
         
@@ -93,11 +104,12 @@ public static class CommandRegistry
     private static Dictionary<string,Func<CommandContext,CommandResult>> commands = new()
     {
         ["move"] = Commands.MoveCommand,
+        ["best"] = Commands.BestMove,
         ["help"] = Commands.HelpCommand,
         ["quit"] = Commands.ExitCommand,
         ["exit"] = Commands.ExitCommand
     };
     
     public static bool TryGetCommand(string command, out Func<CommandContext,CommandResult> fn)
-        => commands.TryGetValue(command.ToLowerInvariant(),out fn);
+        => commands.TryGetValue(command.ToLowerInvariant(),out fn!);
 }

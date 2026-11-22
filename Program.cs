@@ -2,4 +2,4 @@
 
 Terminal t = new();
 
-t.Start();
+t.StartAgainstBot(true);
