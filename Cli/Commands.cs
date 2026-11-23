@@ -254,6 +254,9 @@ public static class CommandRegistry
     
     internal static List<Command> GetNonGameCommandList() => nonGameCommands;
     internal static List<Command> GetCommandList() => commands;
+    
+    public static bool IsValidCommand(string command)
+        => commands.Exists((co) => command == co.Verb || co.Aliases.Contains(command));
 
     public static Command? FromString(string input, bool inGame, out string[] args)
     {

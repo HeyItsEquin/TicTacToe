@@ -53,10 +53,7 @@ public class Game
         {
             shouldEndGame = false;
             inGame = false;
-            Prompt();            
         }
-        else
-            GamePrompt();
 
         if (botPlaying != Player.None && game.CurrentPlayer == botPlaying && inGame)
         {
@@ -65,7 +62,7 @@ public class Game
         }
         else
         {
-            var inp = Console.ReadLine() ?? "";
+            var inp = new Prompt($"({Board.GetPlayerString(game.CurrentPlayer)}) > ").GetInput();
             Evaluate(inp);
         }
         
@@ -75,9 +72,7 @@ public class Game
     private void Repl()
     {
         ShowOutput();
-        Prompt();
-
-        var inp = Console.ReadLine() ?? ""; 
+        var inp = new Prompt("> ").GetInput(); 
         Evaluate(inp);
     }
     
@@ -127,10 +122,7 @@ public class Game
     private void Prompt() => Console.Write("> ");
     private void GamePrompt() => Console.Write($"({game.CurrentPlayer}) > ");
 
-    public void EndGame()
-    {
-        shouldEndGame = true;
-    }
+    public void EndGame() => shouldEndGame = true;
 
     private void CheckWinner()
     {
@@ -139,128 +131,13 @@ public class Game
         {
             var winStr = winner switch
             {
-                Player.X => "X has won!",
-                Player.O => "O has won!",
-                _ => "It's a draw!"  
+                Player.X => "Winner: X!",
+                Player.O => "Winner: O!",
+                _ => "Winner: Both (Draw)!"  
             };
 
             lastOutput = new CommandResult(ResultType.Ok,winStr);
             EndGame();
         }
-    }
-}
-
-public class Terminal
-{
-    private readonly Board game = new();
-    private Player human = Player.None;
-
-    private bool running = false;
-
-    private string? prevCommandResult;    
-
-    public void StartAgainstBot(bool startFirst)
-    {
-        if (startFirst)
-            human = Player.X;
-        else
-            human = Player.O;
-        running = true;
-        while (running)
-        {
-            if (game.CurrentPlayer == human)
-            {
-                PlayerInput();
-            }
-            else
-            {
-                var bot = new GameBot(game,game.CurrentPlayer);
-                game.MakeMove(bot.BestMove());
-            }
-            CheckWinner();
-        }
-    }
-
-    public void Start()
-    {
-        running = true;
-        while (running)
-        {
-            PlayerInput();
-            CheckWinner();
-        }
-    }
-
-    private void RunCommand(string line)
-    {
-        if (line == "")
-        {
-            prevCommandResult = null;
-            return;
-        }
-        var parts = line.Split(" ");
-        var verb = parts[0];
-        var result = CommandRegistry.TryGetCommand(verb,out var command);
-        if (!result)
-        {
-            prevCommandResult = $"Command Not Found: {verb}";
-            return;
-        }
-
-        var res = command!.Execute(parts[1..],game);
-        if (res.Result == ResultType.Exit)
-            running = false;
-        prevCommandResult = res.Message == string.Empty ? null : res.Message;
-    }
-    
-    private void PlayerInput()
-    {
-        Clear();
-        PrintGame();
-        ShowCommandOutput();
-        ShowPrompt();
-        var line = Console.ReadLine() ?? "";
-        RunCommand(line);
-    }
-    
-    private void CheckWinner()
-    {
-        var winner = game.GetWinner();
-        if (winner != Player.None)
-        {
-            Stop();
-            PrintGame();
-            Console.WriteLine(winner switch
-            {
-                Player.X => "X has won!",
-                Player.O => "O has won!",
-                _ => "It's a draw!"
-            });
-            Console.ReadKey(true);
-        }
-    }
-
-    private void Stop()
-    {
-        Clear();
-        running = false;
-    }
-    private void Clear() => Console.Clear();
-
-    private void ShowCommandOutput()
-    {
-        if (prevCommandResult is null) return;
-
-        Console.WriteLine($"{prevCommandResult}\n");
-    }
-
-    private void PrintGame()
-    {
-        Console.WriteLine($"{game}\n");
-    }
-    
-    private void ShowPrompt()
-    {
-        Console.Write($"({Board.GetPlayerString(game.CurrentPlayer)}) > ");
     }
 }

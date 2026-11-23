@@ -38,7 +38,7 @@ public class Board
             for (j = 0; j < 3; j++)
             {
                 s += $" {GetPlayerString(boardState[ToIndex(3,i,j)])} ";
-                if (j != 2) s += "|";
+                if (j != 2) s += Text.Colored(Color.White,"|");
             }
             if (i != 2) s += "\n";
         }
