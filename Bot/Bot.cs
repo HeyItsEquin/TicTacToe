@@ -6,13 +6,11 @@ public class GameBot
 {
     private Board game;
     private Player maximizer;
-    private Player minimizer;
 
     public GameBot(Board b, Player p)
     {
         game = b;
         maximizer = p;
-        minimizer = p == Player.X ? Player.O : Player.X;
     }
     
     public int BestMove()

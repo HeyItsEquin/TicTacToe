@@ -1,3 +1,6 @@
+using System.Drawing;
+using TicTacToe.Core.Utils;
+
 namespace TicTacToe.Core;
 
 // Player CurrentPlayer, int[] GetLegalMoves(), bool MakeMove(int), void UndoMove(), Player IsGameOver()
@@ -46,9 +49,9 @@ public class Board
     {
         return p switch
         {
-            Player.X => "X",
-            Player.O => "O",
-            _ => "-"
+            Player.X => Text.Colored(Color.Aqua,"X"),
+            Player.O => Text.Colored(Color.Gold,"O"),
+            _ => Text.Colored(Color.Gray,"-")
         };
     }
 

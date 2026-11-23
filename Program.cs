@@ -1,5 +1,5 @@
 ﻿using TicTacToe.Cli;
 
-Terminal t = new();
+Game game = new();
 
-t.StartAgainstBot(true);
+game.Start();
